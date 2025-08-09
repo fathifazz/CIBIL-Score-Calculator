@@ -42,6 +42,7 @@ To run this project locally, follow these steps:
 **Clone the repository:**
 
 >git clone https://github.com/your-username/your-repo-name.git
+
 >cd your-repo-name
 
 **Set up a virtual environment (recommended):**
