@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lendwise AI - Credit Score Prediction</title>
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --dark-blue: #0d47a1;
+            --black: #202124;
+            --light-gray: #f5f7fa;
+            --white: #ffffff;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--black);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        .navbar {
+            background-color: var(--black);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-logo {
+            height: 40px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-blue);
+        }
+        
+        .auth-buttons button {
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .login-btn {
+            background: transparent;
+            border: 1px solid var(--white);
+            color: var(--white);
+            margin-right: 1rem;
+        }
+        
+        .signup-btn {
+            background: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+            color: var(--white);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--black);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--black);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        button[type="submit"] {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        button[type="submit"]:hover {
+            background-color: var(--dark-blue);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .error {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html">
+                <img src="logo.png" alt="Lendwise AI Logo" class="nav-logo">
+            </a>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Credit Score</a></li>
+            <li><a href="check.html">Check Credit Score</a></li>
+        </ul>
+        <div class="auth-buttons">
+            <button class="login-btn">Login</button>
+            <button class="signup-btn">Sign Up</button>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Business Credit Score Prediction</h1>
+        <p>Please fill in your business information to get a credit score prediction:</p>
+        
+        <form id="prediction-form">
+            <div id="form-fields">
+                <!-- Dynamic form fields will be inserted here -->
+            </div>
+            
+            <div id="error" class="error"></div>
+            
+            <div id="loading" class="loading">
+                <p>Processing your request...</p>
+            </div>
+            
+            <button type="submit">Predict Credit Score</button>
+        </form>
+    </div>
+
+    <script>
+        // (Keep your existing JavaScript exactly the same)
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/features')
+                .then(response => response.json())
+                .then(data => createForm(data.features))
+                .catch(error => showError('Failed to load form: ' + error.message));
+            
+            document.getElementById('prediction-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitForm();
+            });
+        });
+        
+        function createForm(features) {
+            const formFields = document.getElementById('form-fields');
+            formFields.innerHTML = '';
+            
+            features.forEach(feature => {
+                const group = document.createElement('div');
+                group.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = feature.replace(/_/g, ' ');
+                label.htmlFor = feature;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = feature;
+                input.name = feature;
+                input.required = true;
+                input.placeholder = `Enter ${feature.replace(/_/g, ' ')}`;
+                
+                group.appendChild(label);
+                group.appendChild(input);
+                formFields.appendChild(group);
+            });
+        }
+        
+        function submitForm() {
+            const form = document.getElementById('prediction-form');
+            const formData = new FormData(form);
+            const data = {};
+            
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                localStorage.setItem('creditResults', JSON.stringify(data));
+                window.location.href = 'check.html';
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                showError('Prediction failed: ' + error.message);
+            });
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

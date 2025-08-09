@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Score Results | Lendwise AI</title>
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --dark-blue: #0d47a1;
+            --black: #202124;
+            --light-gray: #f5f7fa;
+            --white: #ffffff;
+            --red: #e74c3c;
+            --yellow: #f39c12;
+            --green: #27ae60;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--black);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .navbar {
+            background-color: var(--black);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-logo {
+            height: 40px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-blue);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--black);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-card {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-title {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        
+        .risk-meter-container {
+            margin: 2rem 0;
+        }
+        
+        .risk-meter {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, 
+                var(--red) 0%, 
+                var(--yellow) 50%, 
+                var(--green) 100%);
+            border-radius: 10px;
+            position: relative;
+            margin: 1rem 0;
+        }
+        
+        .risk-needle {
+            position: absolute;
+            top: -5px;
+            width: 2px;
+            height: 30px;
+            background: var(--black);
+            transform: translateX(-50%);
+        }
+        
+        .risk-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .risk-high { color: var(--red); }
+        .risk-medium { color: var(--yellow); }
+        .risk-low { color: var(--green); }
+        
+        .back-btn {
+            display: block;
+            text-align: center;
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: background-color 0.3s;
+        }
+        
+        .back-btn:hover {
+            background-color: var(--dark-blue);
+        }
+        
+        .error {
+            color: var(--red);
+            background-color: #fadbd8;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html">
+                <img src="logo.png" alt="Lendwise AI Logo" class="nav-logo">
+            </a>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Credit Score</a></li>
+            <li><a href="check.html">Check Credit Score</a></li>
+        </ul>
+        <div class="auth-buttons">
+            <button class="login-btn">Login</button>
+            <button class="signup-btn">Sign Up</button>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Your Credit Score Results</h1>
+        
+        <div id="results">
+            <div class="result-card">
+                <div class="result-title">Credit Score</div>
+                <div class="result-value" id="credit-score">-</div>
+            </div>
+            
+            <div class="risk-meter-container">
+                <div class="risk-meter">
+                    <div class="risk-needle" id="risk-needle"></div>
+                </div>
+                <div class="risk-labels">
+                    <span>300 (High Risk)</span>
+                    <span>580</span>
+                    <span>850 (Low Risk)</span>
+                </div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-title">Risk Category</div>
+                <div class="result-value" id="risk-category">-</div>
+            </div>
+        </div>
+        
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <a href="index.html" class="back-btn">Make Another Prediction</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const results = JSON.parse(localStorage.getItem('creditResults'));
+                
+                if (!results) {
+                    throw new Error('No results found. Please submit the form first.');
+                }
+                
+                // Display credit score
+                document.getElementById('credit-score').textContent = results.credit_score.toFixed(0);
+                
+                // Position risk needle (300-850 scale)
+                const needlePosition = ((results.credit_score - 300) / (850 - 300)) * 100;
+                document.getElementById('risk-needle').style.left = `${needlePosition}%`;
+                
+                // Display risk category
+                const riskElement = document.getElementById('risk-category');
+                riskElement.textContent = results.risk_category;
+                
+                // Color code based on risk
+                if (results.risk_num === 0) {
+                    riskElement.classList.add('risk-low');
+                } else if (results.risk_num === 1) {
+                    riskElement.classList.add('risk-medium');
+                } else {
+                    riskElement.classList.add('risk-high');
+                }
+                
+            } catch (error) {
+                document.getElementById('results').style.display = 'none';
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
